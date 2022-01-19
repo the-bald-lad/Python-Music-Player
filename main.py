@@ -1,7 +1,6 @@
 import tkinter as t
 from tkinter import filedialog
 import pygame.mixer as mixer
-from pygame import time
 import os
 os.system("cls")
 
