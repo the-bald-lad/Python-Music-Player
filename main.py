@@ -25,6 +25,7 @@ def play_song(song_name: t.StringVar, songs_list: t.Listbox, status: t.StringVar
 def stop_song(status: t.StringVar):
     global current
     mixer.music.stop()
+    print("Stopping")
     status.set("Song Stopped")
     current = "N/A"
 
@@ -38,8 +39,10 @@ def load(listbox, status: t.StringVar):
         for track in tracks:
             listbox.insert(t.END, track)
         status.set("Directory Loaded Successfully")
+        print("Directory loaded")
     except OSError:
-        status.set("Stopped Loading Directory")       
+        status.set("Stopped Loading Directory")
+        print(OSError)
         
 def pause_song(status: t.StringVar):
     global current
@@ -86,11 +89,11 @@ t.Label(song_frame, text='CURRENTLY PLAYING:', bg='LightBlue', font=(font_, 10, 
 song_lbl = t.Label(song_frame, textvariable=current_song, bg='Goldenrod', font=(font_, 12), width=25)
 song_lbl.place(x=150, y=20)
 # Buttons in the main screen
-pause_btn = t.Button(control_frame, text="Pause", bg='Aqua', font=(font_, 13), width=7, command=lambda: pause_song(song_status))
+pause_btn = t.Button(control_frame, text="Play", bg='Aqua', font=(font_, 13), width=7, command=lambda: play_song(current_song, playlist, song_status))
 pause_btn.place(x=15, y=10)
-stop_btn = t.Button(control_frame, text='Stop', bg='Aqua', font=(font_, 13), width=7, command=lambda: stop_song(song_status))
+stop_btn = t.Button(control_frame, text='Pause', bg='Aqua', font=(font_, 13), width=7, command=lambda: pause_song(song_status))
 stop_btn.place(x=105, y=10)
-play_btn = t.Button(control_frame, text='Play', bg='Aqua', font=(font_, 13), width=7, command=lambda: play_song(current_song, playlist, song_status))
+play_btn = t.Button(control_frame, text='Stop', bg='Aqua', font=(font_, 13), width=7, command=lambda: stop_song(song_status))
 play_btn.place(x=195, y=10)
 restart_btn = t.Button(control_frame, text='Restart', bg='Aqua', font=(font_, 13), width=7, command=lambda: restart())
 restart_btn.place(x=285, y=10)
