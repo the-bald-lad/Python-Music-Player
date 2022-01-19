@@ -38,7 +38,7 @@ def load(listbox, status: t.StringVar):
     listbox.delete(0, t.END)
     try:
         tracks.clear()
-        os.chdir(filedialog.askdirectory(title='Open a songs directory'))
+        os.chdir(filedialog.askdirectory(title='Please ensure files are encoded using the MP3 format!'))
         tracks = os.listdir()
         for track in tracks:
             listbox.insert(t.END, track)
