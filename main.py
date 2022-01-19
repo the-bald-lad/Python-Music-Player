@@ -1,6 +1,7 @@
 import tkinter as t
 from tkinter import filedialog
 import pygame.mixer as mixer
+from pygame import time
 import os
 os.system("cls")
 
@@ -9,8 +10,8 @@ tracks = []
 
 
 def play_song(song_name: t.StringVar, songs_list: t.Listbox, status: t.StringVar):
-    global current
-    if current not in ["Play", "Pause"]:
+    global current, tracks
+    if current not in ["Play", "Pause"]:   
         song_name.set(songs_list.get(t.ACTIVE))
         mixer.music.load(songs_list.get(t.ACTIVE))
         mixer.music.play()
@@ -62,7 +63,7 @@ def restart():
 mixer.init()
 root = t.Tk()
 root.geometry('700x220')
-root.title("P.M.P")
+root.title("Python Music Player")
 root.resizable(0, 0)
 
 font_ = "Comic Sans MS"
@@ -82,24 +83,24 @@ playlist.config(yscrollcommand=scroll_bar.set)
 scroll_bar.config(command=playlist.yview)
 playlist.pack(fill=t.BOTH, padx=5, pady=5)
 
-current_song = t.StringVar(root, value='<Not selected>')
-song_status = t.StringVar(root, value='<Not Available>')
+current_song = t.StringVar(root, value='No Song Playing')
+song_status = t.StringVar(root, value='Please Load a Directory')
 
 # SongFrame Labels
-t.Label(song_frame, text='CURRENTLY PLAYING:', bg='LightBlue', font=(font_, 10, 'bold')).place(x=5, y=20)
+t.Label(song_frame, text='CURRENTLY PLAYING:', bg='LightBlue', font=(font_, 10, 'bold')).place(x=3, y=20)
 song_lbl = t.Label(song_frame, textvariable=current_song, bg='Goldenrod', font=(font_, 12), width=25)
-song_lbl.place(x=150, y=20)
+song_lbl.place(x=160, y=20)
 # Buttons in the main screen
-pause_btn = t.Button(control_frame, text="Play", bg='Aqua', font=(font_, 13), width=7, command=lambda: play_song(current_song, playlist, song_status))
-pause_btn.place(x=15, y=10)
-stop_btn = t.Button(control_frame, text='Pause', bg='Aqua', font=(font_, 13), width=7, command=lambda: pause_song(song_status))
-stop_btn.place(x=105, y=10)
-play_btn = t.Button(control_frame, text='Stop', bg='Aqua', font=(font_, 13), width=7, command=lambda: stop_song(song_status))
-play_btn.place(x=195, y=10)
+play_btn = t.Button(control_frame, text="Play", bg='Aqua', font=(font_, 13), width=7, command=lambda: play_song(current_song, playlist, song_status))
+play_btn.place(x=15, y=10)
+pause_btn = t.Button(control_frame, text='Pause', bg='Aqua', font=(font_, 13), width=7, command=lambda: pause_song(song_status))
+pause_btn.place(x=105, y=10)
+stop_btn = t.Button(control_frame, text='Stop', bg='Aqua', font=(font_, 13), width=7, command=lambda: stop_song(song_status))
+stop_btn.place(x=195, y=10)
 restart_btn = t.Button(control_frame, text='Restart', bg='Aqua', font=(font_, 13), width=7, command=lambda: restart())
 restart_btn.place(x=285, y=10)
-load_btn = t.Button(control_frame, text='Load Directory', bg='Aqua', font=(font_, 13), width=35, command=lambda: load(playlist, song_status))
-load_btn.place(x=10, y=55)
+load_btn = t.Button(control_frame, text='Load Directory', bg='Aqua', font=(font_, 13), width=34, command=lambda: load(playlist, song_status))
+load_btn.place(x=15, y=55)
 
 t.Label(root, textvariable=song_status, bg='SteelBlue', font=(font_, 9), justify=t.LEFT).pack(side=t.BOTTOM, fill=t.X)
 
