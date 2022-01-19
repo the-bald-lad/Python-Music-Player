@@ -4,19 +4,32 @@ import pygame.mixer as mixer
 import os
 os.system("cls")
 
-current = "pause"
+current = "N/A"
+
+clear_tracks = lambda tracks: tracks.clear()
 
 def play_song(song_name: t.StringVar, songs_list: t.Listbox, status: t.StringVar):
-    song_name.set(songs_list.get(t.ACTIVE))
-    mixer.music.load(songs_list.get(t.ACTIVE))
-    mixer.music.play()
-    status.set("Song Playing")
+    global current
+    if current not in ["Play", "Pause"]:
+        song_name.set(songs_list.get(t.ACTIVE))
+        mixer.music.load(songs_list.get(t.ACTIVE))
+        mixer.music.play()
+        status.set("Song Playing")
+        current = "Pause"
+    elif current == "Play":
+        print("Playing")
+        current = "Pause"
+        mixer.music.unpause()
+        status.set("Song Playing")
     
 def stop_song(status: t.StringVar):
+    global current
     mixer.music.stop()
     status.set("Song Stopped")
+    current = "N/A"
 
 def load(listbox, status: t.StringVar):
+    global current
     tracks = []
     try:
         clear_tracks(tracks)
@@ -26,18 +39,13 @@ def load(listbox, status: t.StringVar):
             listbox.insert(t.END, track)
         status.set("Directory Loaded Successfully")
     except OSError:
-        status.set("Stopped Loading Directory")
+        status.set("Stopped Loading Directory")       
         
-def clear_tracks(tracks):
-    tracks.clear()       
-        
-def pause_resume_song(status: t.StringVar): # this doesn't work aaaaaaaaaaaaaaaaaaaaaaaaaaa
+def pause_song(status: t.StringVar):
     global current
-    if current == "play":
-        current = "Pause"
-        mixer.music.unpause()
-        status.set("Song Playing")
-    elif current == "pause":
+    print(current)
+    if current == "Pause":
+        print("Pausing")
         current = "Play"
         mixer.music.pause()
         status.set("Song Paused")
@@ -78,7 +86,7 @@ t.Label(song_frame, text='CURRENTLY PLAYING:', bg='LightBlue', font=(font_, 10, 
 song_lbl = t.Label(song_frame, textvariable=current_song, bg='Goldenrod', font=(font_, 12), width=25)
 song_lbl.place(x=150, y=20)
 # Buttons in the main screen
-pause_btn = t.Button(control_frame, text=current, bg='Aqua', font=(font_, 13), width=7, command=lambda: pause_resume_song(song_status))
+pause_btn = t.Button(control_frame, text="Pause", bg='Aqua', font=(font_, 13), width=7, command=lambda: pause_song(song_status))
 pause_btn.place(x=15, y=10)
 stop_btn = t.Button(control_frame, text='Stop', bg='Aqua', font=(font_, 13), width=7, command=lambda: stop_song(song_status))
 stop_btn.place(x=105, y=10)
