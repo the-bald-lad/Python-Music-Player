@@ -5,8 +5,8 @@ import os
 os.system("cls")
 
 current = "N/A"
+tracks = []
 
-clear_tracks = lambda tracks: tracks.clear()
 
 def play_song(song_name: t.StringVar, songs_list: t.Listbox, status: t.StringVar):
     global current
@@ -31,9 +31,10 @@ def stop_song(status: t.StringVar):
 
 def load(listbox, status: t.StringVar):
     global current
-    tracks = []
+    global tracks
+    listbox.delete(0, t.END)
     try:
-        clear_tracks(tracks)
+        tracks.clear()
         os.chdir(filedialog.askdirectory(title='Open a songs directory'))
         tracks = os.listdir()
         for track in tracks:
