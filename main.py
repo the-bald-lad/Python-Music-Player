@@ -15,6 +15,8 @@ def play_song(song_name: t.StringVar, songs_list: t.Listbox, status: t.StringVar
         song_name.set(songs_list.get(t.ACTIVE))
         mixer.music.load(songs_list.get(t.ACTIVE))
         mixer.music.play()
+        for i in tracks:
+            mixer.music.queue(i)
         status.set("Song Playing")
         current = "Pause"
     elif current == "Play":
