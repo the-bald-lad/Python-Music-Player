@@ -1,0 +1,95 @@
+import tkinter as t
+from tkinter import filedialog
+import pygame.mixer as mixer
+import os
+os.system("cls")
+
+current = "pause"
+
+def play_song(song_name: t.StringVar, songs_list: t.Listbox, status: t.StringVar):
+    song_name.set(songs_list.get(t.ACTIVE))
+    mixer.music.load(songs_list.get(t.ACTIVE))
+    mixer.music.play()
+    status.set("Song Playing")
+    
+def stop_song(status: t.StringVar):
+    mixer.music.stop()
+    status.set("Song Stopped")
+
+def load(listbox, status: t.StringVar):
+    tracks = []
+    try:
+        clear_tracks(tracks)
+        os.chdir(filedialog.askdirectory(title='Open a songs directory'))
+        tracks = os.listdir()
+        for track in tracks:
+            listbox.insert(t.END, track)
+        status.set("Directory Loaded Successfully")
+    except OSError:
+        status.set("Stopped Loading Directory")
+        
+def clear_tracks(tracks):
+    tracks.clear()       
+        
+def pause_resume_song(status: t.StringVar): # this doesn't work aaaaaaaaaaaaaaaaaaaaaaaaaaa
+    global current
+    if current == "play":
+        current = "Pause"
+        mixer.music.unpause()
+        status.set("Song Playing")
+    elif current == "pause":
+        current = "Play"
+        mixer.music.pause()
+        status.set("Song Paused")
+
+def restart():
+    stop_song(song_status)
+    play_song(current_song, playlist, song_status)
+
+
+mixer.init()
+root = t.Tk()
+root.geometry('700x220')
+root.title("P.M.P")
+root.resizable(0, 0)
+
+font_ = "Comic Sans MS"
+
+song_frame = t.LabelFrame(root, text='Now Playing:', bg='LightBlue', width=450, height=80)
+song_frame.place(x=0, y=0)
+control_frame = t.LabelFrame(root, text='Control Panel: ', bg='LightBlue', width=450, height=120)
+control_frame.place(y=80)
+playListbox_frame = t.LabelFrame(root, text='Up Next: ', bg='RoyalBlue')
+playListbox_frame.place(x=450, y=0, height=200, width=250)
+playlist = t.Listbox(playListbox_frame, font=(font_, 11), selectbackground='Gold')
+
+scroll_bar = t.Scrollbar(playListbox_frame, orient=t.VERTICAL)
+scroll_bar.pack(side=t.RIGHT, fill=t.BOTH)
+
+playlist.config(yscrollcommand=scroll_bar.set)
+scroll_bar.config(command=playlist.yview)
+playlist.pack(fill=t.BOTH, padx=5, pady=5)
+
+current_song = t.StringVar(root, value='<Not selected>')
+song_status = t.StringVar(root, value='<Not Available>')
+
+# SongFrame Labels
+t.Label(song_frame, text='CURRENTLY PLAYING:', bg='LightBlue', font=(font_, 10, 'bold')).place(x=5, y=20)
+song_lbl = t.Label(song_frame, textvariable=current_song, bg='Goldenrod', font=(font_, 12), width=25)
+song_lbl.place(x=150, y=20)
+# Buttons in the main screen
+pause_btn = t.Button(control_frame, text=current, bg='Aqua', font=(font_, 13), width=7, command=lambda: pause_resume_song(song_status))
+pause_btn.place(x=15, y=10)
+stop_btn = t.Button(control_frame, text='Stop', bg='Aqua', font=(font_, 13), width=7, command=lambda: stop_song(song_status))
+stop_btn.place(x=105, y=10)
+play_btn = t.Button(control_frame, text='Play', bg='Aqua', font=(font_, 13), width=7, command=lambda: play_song(current_song, playlist, song_status))
+play_btn.place(x=195, y=10)
+restart_btn = t.Button(control_frame, text='Restart', bg='Aqua', font=(font_, 13), width=7, command=lambda: restart())
+restart_btn.place(x=285, y=10)
+load_btn = t.Button(control_frame, text='Load Directory', bg='Aqua', font=(font_, 13), width=35, command=lambda: load(playlist, song_status))
+load_btn.place(x=10, y=55)
+
+t.Label(root, textvariable=song_status, bg='SteelBlue', font=(font_, 9), justify=t.LEFT).pack(side=t.BOTTOM, fill=t.X)
+
+root.update()
+root.mainloop()
