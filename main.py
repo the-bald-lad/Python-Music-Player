@@ -1,21 +1,27 @@
+from operator import index
 import tkinter as t
-from tkinter import filedialog
+from tkinter import TclError, filedialog
 import pygame.mixer as mixer
+from threading import Thread
 import os
 os.system("cls")
 
 current = "N/A"
+stop_threads = False
 tracks = []
+names = []
 
 
 def play_song(song_name: t.StringVar, songs_list: t.Listbox, status: t.StringVar):
-    global current, tracks
-    if current not in ["Play", "Pause"]:   
-        song_name.set(songs_list.get(t.ACTIVE))
+    global current, tracks, names
+    if current not in ["Play", "Pause"]:
+        song_name.set(names[0])
+        names.remove(names[0])
         mixer.music.load(songs_list.get(t.ACTIVE))
         mixer.music.play()
-        for i in tracks:
+        for i in tracks[:]:
             mixer.music.queue(i)
+            tracks.remove(i)
         status.set("Song Playing")
         current = "Pause"
     elif current == "Play":
@@ -30,10 +36,10 @@ def stop_song(status: t.StringVar):
     print("Stopping")
     status.set("Song Stopped")
     current = "N/A"
+    root.update()
 
 def load(listbox, status: t.StringVar):
-    global current
-    global tracks
+    global current, tracks, names
     listbox.delete(0, t.END)
     try:
         tracks.clear()
@@ -41,8 +47,11 @@ def load(listbox, status: t.StringVar):
         tracks = os.listdir()
         for track in tracks:
             listbox.insert(t.END, track)
+        for track in tracks:
+            names.append(track)
         status.set("Directory Loaded Successfully")
         print("Directory loaded")
+        print(names)
     except OSError:
         status.set("Stopped Loading Directory")
         print(OSError)
@@ -55,11 +64,30 @@ def pause_song(status: t.StringVar):
         current = "Play"
         mixer.music.pause()
         status.set("Song Paused")
+    root.update()
 
 def restart():
     stop_song(song_status)
     play_song(current_song, playlist, song_status)
+    root.update()
 
+def check(song_name: t.StringVar):
+    global current, stop_threads
+    while True:
+        root.update()
+        try:
+            print(names[0], current)
+            if not mixer.music.get_busy() and current == "Pause":
+                song_name.set(names[0])
+                names.remove(names[0])
+            if stop_threads:
+                break
+        except IndexError:
+            print("Empty directory")
+        
+
+def on_closing():
+    root.destroy()
 
 mixer.init()
 root = t.Tk()
@@ -91,6 +119,7 @@ song_status = t.StringVar(root, value='Please Load a Directory')
 t.Label(song_frame, text='CURRENTLY PLAYING:', bg='LightBlue', font=(font_, 10, 'bold')).place(x=3, y=20)
 song_lbl = t.Label(song_frame, textvariable=current_song, bg='Goldenrod', font=(font_, 12), width=25)
 song_lbl.place(x=160, y=20)
+
 # Buttons in the main screen
 play_btn = t.Button(control_frame, text="Play", bg='Aqua', font=(font_, 13), width=7, command=lambda: play_song(current_song, playlist, song_status))
 play_btn.place(x=15, y=10)
@@ -105,5 +134,10 @@ load_btn.place(x=15, y=55)
 
 t.Label(root, textvariable=song_status, bg='SteelBlue', font=(font_, 9), justify=t.LEFT).pack(side=t.BOTTOM, fill=t.X)
 
+beans = Thread(target=check, args=(current_song, ))
+beans.daemon = True 
+beans.start()
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.update()
 root.mainloop()
+stop_threads = True
