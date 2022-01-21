@@ -13,7 +13,7 @@ root = tk.ThemedTk()
 root.get_themes()
 root.set_theme("radiance")
 
-statusbar = ttk.Label(root, text="Not Playing", relief=SUNKEN, anchor=W, font='Times 10 italic')
+statusbar = ttk.Label(root, text="Not Playing", relief=SUNKEN, anchor=W, font='Helvetica 10 italic')
 statusbar.pack(side=BOTTOM, fill=X)
 
 menubar = Menu(root)
@@ -148,7 +148,6 @@ def start_count(t):
 
 def play_music():
     global paused
-
     if paused:
         mixer.music.unpause()
         statusbar['text'] = "Music Resumed"
@@ -167,14 +166,13 @@ def play_music():
         except IndexError:
             tkinter.messagebox.showerror('File not found', 'Please select a song from the menu on the left to play.')
 
+paused = FALSE
+muted = FALSE
+
 
 def stop_music():
     mixer.music.stop()
     statusbar['text'] = "Music Stopped"
-
-
-paused = FALSE
-
 
 def pause_music():
     global paused
@@ -182,19 +180,13 @@ def pause_music():
     mixer.music.pause()
     statusbar['text'] = "Music Paused"
 
-
 def rewind_music():
     play_music()
     statusbar['text'] = "Music Rewinded"
 
-
 def set_vol(val):
     volume = float(val) / 100
     mixer.music.set_volume(volume)
-
-
-muted = FALSE
-
 
 def mute_music():
     global muted
@@ -221,7 +213,6 @@ stopBtn.grid(row=0, column=1, padx=10)
 
 pauseBtn = ttk.Button(middleframe, text="pause", command=pause_music)
 pauseBtn.grid(row=0, column=2, padx=10)
-
 
 bottomframe = Frame(rightframe)
 bottomframe.pack()
