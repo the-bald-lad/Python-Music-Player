@@ -20,6 +20,7 @@ menubar = Menu(root)
 root.config(menu=menubar)
 
 subMenu = Menu(menubar, tearoff=0)
+subMenu2 = Menu(menubar, tearoff=0)
 
 playlist = []
 
@@ -61,10 +62,19 @@ def del_songs():
     playlistbox.delete(0, len(playlist))
     playlist.clear()
 
+def help():
+    tkinter.messagebox.showinfo("Help", "+ Add -> This adds one song to the playlist\n+ AddDir -> This adds all songs from a given directory\n- Del -> This removes the selected song from the playlist.")
+   
+def about():
+    tkinter.messagebox.showinfo("About", "This is a small project that is published at https://github.com/the-bald-lad/Python-Music-Player.\n It was made in my spare time and is probably full of bugs.")
+
 menubar.add_cascade(label="File", menu=subMenu)
+menubar.add_cascade(label="Help", menu=subMenu2)
 menubar.add_cascade(label="Exit", command=root.destroy)
 subMenu.add_command(label="Add Song", command=browse_file)
 subMenu.add_command(label="Remove All Songs", command=del_songs)
+subMenu2.add_command(label="Help about buttons", command=help)
+subMenu2.add_command(label="About", command=about)
 
 subMenu = Menu(menubar, tearoff=0)
 
