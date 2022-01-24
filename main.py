@@ -1,8 +1,10 @@
 from operator import index
 import tkinter as t
-from tkinter import TclError, filedialog
+from tkinter import filedialog
 import pygame.mixer as mixer
 from threading import Thread
+import threading
+from time import sleep
 import os
 os.system("cls")
 
@@ -15,8 +17,7 @@ names = []
 def play_song(song_name: t.StringVar, songs_list: t.Listbox, status: t.StringVar):
     global current, tracks, names
     if current not in ["Play", "Pause"]:
-        song_name.set(names[0])
-        names.remove(names[0])
+        song_name.set(songs_list.get(t.ACTIVE))
         mixer.music.load(songs_list.get(t.ACTIVE))
         mixer.music.play()
         for i in tracks[:]:
@@ -71,23 +72,38 @@ def restart():
     play_song(current_song, playlist, song_status)
     root.update()
 
-def check(song_name: t.StringVar):
-    global current, stop_threads
-    while True:
-        root.update()
-        try:
-            print(names[0], current)
-            if not mixer.music.get_busy() and current == "Pause":
-                song_name.set(names[0])
-                names.remove(names[0])
-            if stop_threads:
-                break
-        except IndexError:
-            print("Empty directory")
-        
-
 def on_closing():
     root.destroy()
+
+def show_details(play_song):    
+    a = mixer.Sound(play_song)
+    total_length = a.get_length()
+
+    mins, secs = divmod(total_length, 60)
+    mins = round(mins)
+    secs = round(secs)
+    timeformat = '{:02d}:{:02d}'.format(mins, secs)
+    lengthlabel['text'] = "Total Length" + ' - ' + timeformat
+
+    t1 = threading.Thread(target=start_count, args=(total_length,))
+    t1.start()
+
+
+def start_count(t):
+    global current
+    current_time = 0
+    while current_time <= t and mixer.music.get_busy():
+        if current == "Play":
+            continue
+        else:
+            mins, secs = divmod(current_time, 60)
+            mins = round(mins)
+            secs = round(secs)
+            timeformat = '{:02d}:{:02d}'.format(mins, secs)
+            currenttimelabel['text'] = "Current Time" + ' - ' + timeformat
+            sleep(1)
+            current_time += 1
+
 
 mixer.init()
 root = t.Tk()
@@ -116,9 +132,16 @@ current_song = t.StringVar(root, value='No Song Playing')
 song_status = t.StringVar(root, value='Please Load a Directory')
 
 # SongFrame Labels
-t.Label(song_frame, text='CURRENTLY PLAYING:', bg='LightBlue', font=(font_, 10, 'bold')).place(x=3, y=20)
+t.Label(song_frame, text='CURRENTLY PLAYING:', bg='LightBlue', font=(font_, 10, 'bold')).place(x=3, y=5)
 song_lbl = t.Label(song_frame, textvariable=current_song, bg='Goldenrod', font=(font_, 12), width=25)
-song_lbl.place(x=160, y=20)
+song_lbl.place(x=160, y=5)
+
+# Current time and playhead
+currenttimelabel = t.Label(song_frame, bg="LightBlue", text='Current Time : --:--')
+currenttimelabel.place(x=3, y=33)
+
+lengthlabel = t.Label(song_frame, bg="LightBlue", text='Total Length : --:--')
+lengthlabel.place(x=130, y=33)
 
 # Buttons in the main screen
 play_btn = t.Button(control_frame, text="Play", bg='Aqua', font=(font_, 13), width=7, command=lambda: play_song(current_song, playlist, song_status))
@@ -134,10 +157,6 @@ load_btn.place(x=15, y=55)
 
 t.Label(root, textvariable=song_status, bg='SteelBlue', font=(font_, 9), justify=t.LEFT).pack(side=t.BOTTOM, fill=t.X)
 
-beans = Thread(target=check, args=(current_song, ))
-beans.daemon = True 
-beans.start()
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.update()
 root.mainloop()
-stop_threads = True
