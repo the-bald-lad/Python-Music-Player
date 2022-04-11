@@ -1,3 +1,4 @@
+from math import ceil
 import os
 import threading
 import time
@@ -7,7 +8,7 @@ from tkinter import filedialog
 from tkinter import ttk
 from ttkthemes import themed_tk as tk
 from mutagen.mp3 import MP3
-from pygame import mixer
+from pygame import mixer, error
 
 root = tk.ThemedTk()
 root.get_themes()
@@ -27,18 +28,26 @@ playlist = []
 
 def browse_file():
     global filename_path
-    filename_path = filedialog.askopenfilename()
-    add_to_playlist(filename_path)
-    mixer.music.queue(filename_path)
+    try:
+        filename_path = filedialog.askopenfilename()
+        add_to_playlist(filename_path)
+        mixer.music.queue(filename_path)
+    except error:
+        pass
 
 def browse_dir():
     global filename_path
-    path_of_the_directory = filedialog.askdirectory(title='Open a songs directory')
-    for filename in os.listdir(path_of_the_directory)[::-1]:
-        filename_path = os.path.join(path_of_the_directory, filename)
-        add_to_playlist(filename_path)
-        mixer.music.queue(filename_path)
-            
+    try: 
+        path_of_the_directory = filedialog.askdirectory(title='Open a songs directory')
+        for filename in os.listdir(path_of_the_directory)[::-1]:
+            filename_path = os.path.join(path_of_the_directory, filename)
+            add_to_playlist(filename_path)
+            mixer.music.queue(filename_path)
+    except FileNotFoundError:
+        pass
+    except PermissionError:
+        tkinter.messagebox.showerror('Missing Perms', 'The chosen directory requires administrator permissions to be accessed.')
+     
 def add_to_playlist(filename):
     filename = os.path.basename(filename)
     index = 0
@@ -157,12 +166,16 @@ def play_music():
             selected_song = playlistbox.curselection()
             selected_song = int(selected_song[0])
             play_it = playlist[selected_song]
+            
             mixer.music.load(play_it)
             mixer.music.play()
+            
             statusbar['text'] = "Playing music" + ' - ' + os.path.basename(play_it)
             show_details(play_it)
         except IndexError:
             tkinter.messagebox.showerror('File not found', 'Please select a song from the menu on the left to play.')
+        except error:
+            tkinter.messagebox.showerror('Error in playing music', 'The selected file type is not supported.')
 
 paused = FALSE
 muted = FALSE
@@ -185,6 +198,14 @@ def rewind_music():
 def set_vol(val):
     volume = float(val) / 100
     mixer.music.set_volume(volume)
+    print(val)
+    if val == "100.0":
+        vol = "100"
+    elif val[0] in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] and val[1] == ".":
+        vol = val[0:1]
+    else:
+        vol = val[0:2]
+    statusbar['text'] = f"Volume set to {vol}%"
 
 def mute_music():
     global muted
@@ -200,6 +221,7 @@ def mute_music():
         muted = TRUE
 
 def on_closing():
+    print("Music Player Closing")
     stop_music()
     root.destroy()
 
@@ -211,10 +233,10 @@ playBtn = ttk.Button(middleframe, text="Play", command=play_music)
 playBtn.grid(row=0, column=0, padx=10)
 
 stopBtn = ttk.Button(middleframe, text="Stop", command=stop_music)
-stopBtn.grid(row=0, column=1, padx=10)
+stopBtn.grid(row=0, column=2, padx=10)
 
-pauseBtn = ttk.Button(middleframe, text="pause", command=pause_music)
-pauseBtn.grid(row=0, column=2, padx=10)
+pauseBtn = ttk.Button(middleframe, text="Pause", command=pause_music)
+pauseBtn.grid(row=0, column=1, padx=10)
 
 bottomframe = Frame(rightframe)
 bottomframe.pack()
@@ -226,9 +248,11 @@ volumeBtn = ttk.Button(bottomframe, text="Mute", command=mute_music)
 volumeBtn.grid(row=0, column=1)
 
 scale = ttk.Scale(bottomframe, from_=0, to=100, orient=HORIZONTAL, command=set_vol)
-scale.set(70)
+scale.set(50)
 mixer.music.set_volume(0.7)
 scale.grid(row=0, column=2, pady=15, padx=30)
+
+statusbar['text'] = "Add some music to start listening!"
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
