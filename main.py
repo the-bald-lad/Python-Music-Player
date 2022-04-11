@@ -29,9 +29,7 @@ def browse_file():
     global filename_path
     filename_path = filedialog.askopenfilename()
     add_to_playlist(filename_path)
-
     mixer.music.queue(filename_path)
-
 
 def browse_dir():
     global filename_path
@@ -41,7 +39,6 @@ def browse_dir():
         add_to_playlist(filename_path)
         mixer.music.queue(filename_path)
             
-
 def add_to_playlist(filename):
     filename = os.path.basename(filename)
     index = 0
@@ -67,6 +64,7 @@ def help():
    
 def about():
     tkinter.messagebox.showinfo("About", "This is a small project that is published at https://github.com/the-bald-lad/Python-Music-Player.\n It was made in my spare time and is probably full of bugs.")
+
 
 menubar.add_cascade(label="File", menu=subMenu)
 menubar.add_cascade(label="Help", menu=subMenu2)
@@ -201,6 +199,10 @@ def mute_music():
         scale.set(0)
         muted = TRUE
 
+def on_closing():
+    stop_music()
+    root.destroy()
+
 
 middleframe = Frame(rightframe)
 middleframe.pack(pady=30, padx=30)
@@ -227,12 +229,6 @@ scale = ttk.Scale(bottomframe, from_=0, to=100, orient=HORIZONTAL, command=set_v
 scale.set(70)
 mixer.music.set_volume(0.7)
 scale.grid(row=0, column=2, pady=15, padx=30)
-
-
-def on_closing():
-    stop_music()
-    root.destroy()
-
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.mainloop()
