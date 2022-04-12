@@ -1,4 +1,3 @@
-from math import ceil
 import os
 import threading
 import time
@@ -14,7 +13,7 @@ root = tk.ThemedTk()
 root.get_themes()
 root.set_theme("radiance")
 
-statusbar = ttk.Label(root, text="Not Playing", relief=SUNKEN, anchor=W, font='Helvetica 10 italic')
+statusbar = ttk.Label(root, text="Loading", relief=SUNKEN, anchor=W, font='Helvetica 10 italic')
 statusbar.pack(side=BOTTOM, fill=X)
 
 menubar = Menu(root)
@@ -74,10 +73,15 @@ def help():
 def about():
     tkinter.messagebox.showinfo("About", "This is a small project that is published at https://github.com/the-bald-lad/Python-Music-Player.\n It was made in my spare time and is probably full of bugs.")
 
+def on_closing():
+    print("Music Player Closing")
+    stop_music()
+    root.destroy()
+
 
 menubar.add_cascade(label="File", menu=subMenu)
 menubar.add_cascade(label="Help", menu=subMenu2)
-menubar.add_cascade(label="Exit", command=root.destroy)
+menubar.add_cascade(label="Exit", command=on_closing)
 subMenu.add_command(label="Add Song", command=browse_file)
 subMenu.add_command(label="Remove All Songs", command=del_songs)
 subMenu2.add_command(label="Help about buttons", command=help)
@@ -116,8 +120,11 @@ currenttimelabel.pack()
 lengthlabel = ttk.Label(topframe, text='Total Length : --:--')
 lengthlabel.pack(pady=5)
 
+timeformat = ""
+
 
 def show_details(play_song):
+    global timeformat, t1
     file_data = os.path.splitext(play_song)
 
     if file_data[1] == '.mp3':
@@ -154,12 +161,15 @@ def start_count(t):
 
 
 def play_music():
-    global paused
+    global paused, playing
     if paused:
         mixer.music.unpause()
         statusbar['text'] = "Music Resumed"
         paused = FALSE
+    elif playing:
+        pass
     else:
+        playing = TRUE
         try:
             stop_music()
             time.sleep(1)
@@ -177,11 +187,15 @@ def play_music():
         except error:
             tkinter.messagebox.showerror('Error in playing music', 'The selected file type is not supported.')
 
+
 paused = FALSE
 muted = FALSE
+playing = FALSE
 
 
 def stop_music():
+    global playing
+    playing = FALSE
     mixer.music.stop()
     statusbar['text'] = "Music Stopped"
 
@@ -192,13 +206,28 @@ def pause_music():
     statusbar['text'] = "Music Paused"
 
 def rewind_music():
-    play_music()
+    global timeformat, t1
+    timeformat = ""
+    try:
+        stop_music()
+        selected_song = playlistbox.curselection()
+        selected_song = int(selected_song[0])
+        play_it = playlist[selected_song]
+        
+        mixer.music.load(play_it)
+        mixer.music.play()
+        
+        show_details(play_it)
+    except IndexError:
+        tkinter.messagebox.showerror('File not found', 'Please select a song from the menu on the left to play.')
+    except error:
+        tkinter.messagebox.showerror('Error in playing music', 'The selected file type is not supported.')
     statusbar['text'] = "Music Rewinded"
 
 def set_vol(val):
     volume = float(val) / 100
     mixer.music.set_volume(volume)
-    print(val)
+    print(f"Volume: {val}")
     if val == "100.0":
         vol = "100"
     elif val[0] in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] and val[1] == ".":
@@ -206,6 +235,7 @@ def set_vol(val):
     else:
         vol = val[0:2]
     statusbar['text'] = f"Volume set to {vol}%"
+    
 
 def mute_music():
     global muted
@@ -219,11 +249,6 @@ def mute_music():
         volumeBtn.configure(text="Unmute")
         scale.set(0)
         muted = TRUE
-
-def on_closing():
-    print("Music Player Closing")
-    stop_music()
-    root.destroy()
 
 
 middleframe = Frame(rightframe)
